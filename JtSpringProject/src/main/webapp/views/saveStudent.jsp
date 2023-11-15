@@ -4,6 +4,30 @@
 <html>
 <head>
     <title>Student Records</title>
+    
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <!-- Your existing scripts or stylesheets -->
+
+    <script>
+        // Assuming you have an element with id="dataContainer" to display the data
+        function reloadData() {
+            $.get("/yourPage", function (data) {
+                $("#dataContainer").html(data);
+            });
+        }
+
+        $(document).ready(function () {
+            // Reload data on page load
+            reloadData();
+
+            // Bind the reloadData function to a button click event
+            $("#reloadButton").click(function () {
+                reloadData();
+            });
+        });
+    </script>
 </head>
 <body>
 
