@@ -10,18 +10,22 @@ public class MultipleRequestsExample {
 
     public static void main(String[] args) {
         String baseUrl = "http://localhost:8080/saveStudent";
-
+        final long start,end;
         // Number of requests to send
         int numberOfRequests = 100;
 
         // Create an HttpClient
         HttpClient httpClient = HttpClient.newHttpClient();
-
+        start=System.currentTimeMillis();
+        System.out.println("start time: "+start);
         // Send multiple requests asynchronously
         CompletableFuture.allOf(
                 // Create an array of CompletableFuture representing the completion of each request
                 sendRequestsAsync(httpClient, baseUrl, numberOfRequests)
         ).join();
+        end=System.currentTimeMillis();
+        System.out.println("end time: "+end);
+        System.out.println("time taken to exicute:- "+(end-start));
     }
 
     private static CompletableFuture<Void>[] sendRequestsAsync(HttpClient httpClient, String baseUrl, int numberOfRequests) {

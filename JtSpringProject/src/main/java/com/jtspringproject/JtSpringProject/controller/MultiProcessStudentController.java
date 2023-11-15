@@ -32,7 +32,7 @@ public class MultiProcessStudentController {
 	    private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 	    @Async("asyncExecutor")
-	    @RequestMapping(value = "/s", method = RequestMethod.POST)
+	    @RequestMapping(value = "/saveStudent", method = RequestMethod.POST)
 	    public CompletableFuture<ModelAndView> userlogin(@RequestParam("studentName") String studentName,
 	                                                      @RequestParam("studentStatus") boolean studentStatus,
 	                                                      @RequestParam("studentEmail") String studentEmail,

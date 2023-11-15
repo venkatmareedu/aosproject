@@ -42,7 +42,7 @@ public class StudentController {
     }
 
     //saveStudent
-    @RequestMapping(value = "/saveStudent", method = RequestMethod.POST)
+    @RequestMapping(value = "/s", method = RequestMethod.POST)
     public ModelAndView userlogin(@RequestParam("studentName") String studentName,
                                   @RequestParam("studentStatus") boolean studentStatus,
                                   @RequestParam("studentEmail") String studentEmail,
@@ -77,7 +77,7 @@ public class StudentController {
         
         // Continue processing the ModelAndView
         ModelAndView mView = new ModelAndView("saveStudent");
-        //Thread.sleep(50);
+        //Thread.sleep(100);
         List<Student> students = this.studentService.getStudent();
         for (Student sr : students) {
             System.out.println("Task " + taskId + " - " + sr.toString());
