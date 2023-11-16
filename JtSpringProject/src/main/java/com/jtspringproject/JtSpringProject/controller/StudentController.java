@@ -35,7 +35,7 @@ public class StudentController {
 
     private int taskCounter = 0;
 
-    @RequestMapping(value = "/index", method = RequestMethod.POST)
+    @RequestMapping(value = "/i", method = RequestMethod.POST)
     public String userForm(Model model) {
         System.out.println("Received request at /index");
         return "index";
@@ -77,7 +77,7 @@ public class StudentController {
         
         // Continue processing the ModelAndView
         ModelAndView mView = new ModelAndView("saveStudent");
-        //Thread.sleep(100);
+       Thread.sleep(500);
         List<Student> students = this.studentService.getStudent();
         for (Student sr : students) {
             System.out.println("Task " + taskId + " - " + sr.toString());
