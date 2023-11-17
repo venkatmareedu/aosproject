@@ -112,6 +112,7 @@ public class RequestDetailsEntity {
     public void setRequestAtSameTime(boolean requestAtSameTime) {
         this.requestAtSameTime = requestAtSameTime;
     }
-    
+
+	
     
 }
