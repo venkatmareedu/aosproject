@@ -2,6 +2,8 @@ package com.jtspringproject.JtSpringProject.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import java.util.Iterator;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -68,7 +70,7 @@ public class StudentThread {
                                   HttpServletResponse res) throws InterruptedException {
 
         System.out.println("Received request at /saveStudent");
-
+        
         Student studentEntity = new Student();
         studentEntity.setCourseId(courseId);
         studentEntity.setCourseName(courseName);
@@ -80,9 +82,10 @@ public class StudentThread {
             int processorNumber = getProcessorNumber();
             
             long threadNumber = Thread.currentThread().getId();
-            int requestNumber = getRequestNumber(processorNumber);
-
+            int requestNumber = getRequestNumber(0);
+            
             LocalDateTime startTime = LocalDateTime.now();
+            
             System.out.println("Save Request handling started on Processor: " + processorNumber +
                     " at " + startTime);
 
@@ -110,6 +113,16 @@ public class StudentThread {
             requestDetailsEntity.setCompletionTime(completionTime);//.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
             requestDetailsEntity.setExecutedStatus(false);
             requestDetailsEntity.setPriority(priority);
+//            requestsInOneSecond.add(requestDetailsEntity);
+//            assignPriorityInOneSecond();
+//            for(RequestDetailsEntity r1:requestsInOneSecond) {
+//            	if(requestDetailsEntity.getRequestNumber()== r1.getRequestNumber()) {
+//            		requestDetailsEntity.setPriority(r.getPriority());
+//            		requestDetailsEntity.setRequestNumber(requestDetailsEntity.getPriority());        
+//            		requestDetailsEntity.setRequestAtSameTime(true);
+//            	}
+//            }
+//            requestsInOneSecond.clear();
 
             requestDetailsDAO.saveRequestDetails(requestDetailsEntity);  // Use RequestDetailsDAO to save request details
         });
@@ -123,7 +136,7 @@ public class StudentThread {
             }
 
             int processorNumber = getProcessorNumber();
-            int requestNumber = getRequestNumber(processorNumber);
+            int requestNumber = getRequestNumber(0);
             long threadNumber = Thread.currentThread().getId();
 
             LocalDateTime startTime = LocalDateTime.now();
@@ -152,13 +165,32 @@ public class StudentThread {
             requestDetailsEntity.setStartTime(startTime);//.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
             requestDetailsEntity.setCompletionTime(completionTime);//.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
             requestDetailsEntity.setPriority(priority);
-
+//            requestsInOneSecond.add(requestDetailsEntity);
+//            assignPriorityInOneSecond();
+//            for(RequestDetailsEntity s:requestsInOneSecond) {
+//            	if(requestDetailsEntity.getStartTime()==s.getStartTime()) {
+//            		requestDetailsEntity.setPriority(s.getPriority());
+//            		requestDetailsEntity.setRequestNumber(requestDetailsEntity.getPriority());
+//            		requestDetailsEntity.setRequestAtSameTime(true);
+//            	}
+//            }
+            
             requestDetailsDAO.saveRequestDetails(requestDetailsEntity);  // Use RequestDetailsDAO to save request details
         });
 
         // Wait for both tasks to complete
         CompletableFuture.allOf(saveTask, retrieveTask).join();
-
+        List<RequestDetailsEntity> pendingRequests = requestDetailsDAO.getPendingRequests();
+        for(RequestDetailsEntity wq:pendingRequests) {
+        List<RequestDetailsEntity> pendingRequest = requestDetailsDAO.getPendingRequests(wq.getStartTime());
+        if(pendingRequest!=null) {
+        	for(RequestDetailsEntity a:pendingRequest) {
+        	requestsInOneSecond.add(a);
+        	}
+        }
+        
+        }
+        assignPriorityInOneSecond();
         // Continue processing the ModelAndView
         ModelAndView mView = new ModelAndView("saveStudent");
 
@@ -196,6 +228,7 @@ public class StudentThread {
         // Process requests in the order they arrive (FCFS)
         while (!requestQueue.isEmpty()) {
             RequestDetailsEntity nextRequest = requestQueue.poll();
+            
             if (nextRequest != null) {
                 // Simulate processing by sleeping for a duration (replace with your actual processing logic)
                 try {
@@ -216,7 +249,7 @@ public class StudentThread {
                 requestDetailsDAO.updateRequestDetails(nextRequest);
             }
         }
-        // ...
+       
     }
 
     private int getProcessorNumber() {
@@ -234,7 +267,7 @@ public class StudentThread {
     		}
     		assignPriorityInOneSecond();
     		
-    		return timestampCounter.getAndIncrement()+r.size();
+    		return timestampCounter.getAndIncrement()+n;
     	}
         return timestampCounter.getAndIncrement();
     	
@@ -244,17 +277,35 @@ public class StudentThread {
     private void assignPriorityInOneSecond() {
         // Sort the requests in one second based on thread number
     	
-        requestsInOneSecond.sort(Comparator.comparing(RequestDetailsEntity::getThreadNumber));
+    	requestsInOneSecond.sort(Comparator.comparing(RequestDetailsEntity::getThreadNumber));
 
         // Assign priority based on the sorted order
         int priority = 0;
-        for (RequestDetailsEntity request : requestsInOneSecond) {
+        Iterator<RequestDetailsEntity> iterator = requestsInOneSecond.iterator();
+        while (iterator.hasNext()) {
+            RequestDetailsEntity request = iterator.next();
             request.setPriority(priority++);
-            
+            request.setRequestNumber(request.getPriority());
+            request.setRequestAtSameTime(true);
+            requestDetailsDAO.updateRequestDetails(request);
+            iterator.remove(); 
         }
-
-        // Clear the list for the next second
-        requestsInOneSecond.clear();
+    	
+    	
+//        requestsInOneSecond.sort(Comparator.comparing(RequestDetailsEntity::getThreadNumber));
+//
+//        // Assign priority based on the sorted order
+//        int priority = 0;
+//        for (RequestDetailsEntity request : requestsInOneSecond) {
+//            request.setPriority(priority++);
+//            request.setRequestNumber(request.getPriority());
+//            request.setRequestAtSameTime(true);
+//            requestDetailsDAO.updateRequestDetails(request);
+//            
+//        }
+//
+//        // Clear the list for the next second
+//        requestsInOneSecond.clear();
     }
     
     private void sleepBeforeProcessing() {

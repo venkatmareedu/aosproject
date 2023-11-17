@@ -19,7 +19,7 @@ public class DistributedRequestsExample {
 
     public static void main(String[] args) {
         String baseUrl = "http://localhost:8080/saveStudent";
-        int numberOfRequests = 100;
+        int numberOfRequests = 10;
 
         // Print the number of processors in the system
         System.out.println("Number of processors in the system: " + NUMBER_OF_PROCESSORS);
@@ -64,6 +64,7 @@ public class DistributedRequestsExample {
 
         // Shutdown the executor
         executorService.shutdown();
+        System.out.println();
     }
 
     private static CompletableFuture<Void>[] sendRequestsAsync(HttpClient httpClient, String baseUrl, int numberOfRequests) {
@@ -92,8 +93,9 @@ public class DistributedRequestsExample {
                 // Send the request asynchronously
                 long start = System.currentTimeMillis();
                 try {
+                	//response to initial request
                     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                    System.out.println("Request " + requestNumber + " completed with status code: " + response.statusCode());
+                    System.out.println("Request " + requestNumber + " completed ");
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
